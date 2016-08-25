@@ -82,6 +82,7 @@ int main()
 					}
 					execute(commands[i] , sh_mem , history_head , history_end) ;
 				}
+				deleteQueue(history_head , history_end) ;
 				free_commands(commands , n) ;
 				return 0 ;
 			}
