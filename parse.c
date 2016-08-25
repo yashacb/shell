@@ -66,8 +66,9 @@ void print_infos(command** comms , int n)
 
 command** parse_total(char* string , int* n)
 {
+	purify(string) ;
 	int oss = countOccurences(string , '|') ;
-	command** commands = (command**) malloc((oss) * sizeof(command*)) ;
+	command** commands = (command**) malloc((oss + 1) * sizeof(*commands)) ;
 	char* p = strtok(string , "|")  ;
 	int i = 0 ;
 	while(p != NULL) 
@@ -83,6 +84,8 @@ void free_commands(command** comms , int n)
 {
 	int i = 0 ;
 	for(; i < n ; i++)
+	{
 		free(comms[i]) ;
+	}
 	free(comms) ;
 }

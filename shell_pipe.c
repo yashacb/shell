@@ -19,6 +19,8 @@ int main()
 	int i ;
 	char com[MAX_COMMAND_SIZE] ;
 	QNode* history_head = (QNode*) malloc(sizeof(QNode)) ;
+	history_head -> next = NULL ;
+	history_head -> string = NULL ;
 	QNode* history_end = history_head ; //dummy head
 	int shm_id = shmget(IPC_PRIVATE , MAX_SHARED_MEMORY * sizeof(char) , IPC_CREAT | 0666) ;
 	char* sh_mem = (char *) shmat(shm_id , NULL , 0) ;
@@ -29,7 +31,7 @@ int main()
 		scanf("%[^\n]" , com) ;
 		getchar() ;
 		int l = strlen(com) ;
-		char* ref = (char*) malloc(l*sizeof(char)) ;
+		char* ref = (char*) malloc((l + 1)*sizeof(char)) ;
 		//retrieve command from history if needed .
 		if(com[0] == '!')
 		{
@@ -42,7 +44,7 @@ int main()
 			else
 			{
 				int n = atoi(com + 1) ;
-				if(n <= MAX_HISTORY_SIZE)
+				if(n <= MAX_HISTORY_SIZE && n > 0)
 				{
 					QNode* req = getQ(history_head , history_end , n) ;
 					strcpy(com , req -> string) ;
@@ -85,7 +87,7 @@ int main()
 			}
 			else
 			{
-				wait() ;
+				wait(NULL) ;
 				if(sh_mem[0] != '\0')
 					printf("%s\n", sh_mem);
 			}

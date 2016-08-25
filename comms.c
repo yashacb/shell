@@ -23,9 +23,11 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 void list(command* com , char* sh_mem)
 {
 	char* directory ;
+	int to_free = 0 ;
 	if(com -> ip_redirect != NULL)
 	{
 		directory = (char*) malloc(MAX_DIREC_SIZE*sizeof(char)) ;
+		to_free = 1 ;
 		FILE* fp = fopen(com -> ip_redirect , "r") ;
 		directory = fgets(directory , MAX_DIREC_SIZE , fp) ;
 		fclose(fp) ;
@@ -37,6 +39,7 @@ void list(command* com , char* sh_mem)
 	else
 	{
 		directory = (char*) malloc(MAX_DIREC_SIZE*sizeof(char)) ;
+		to_free = 1 ;
 		getcwd(directory , MAX_DIREC_SIZE) ;
 	}
 	DIR *dir = opendir(directory) ;
@@ -55,6 +58,8 @@ void list(command* com , char* sh_mem)
 	}
 	*(--ptr) = '\0' ;
 	closedir(dir) ;
+	if(to_free == 1)
+		free(directory) ;
 }
 
 void disp(command* com , char* sh_mem)
