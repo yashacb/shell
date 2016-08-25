@@ -9,6 +9,7 @@ command* init(command* comm)
 	comm -> arg = NULL ;
 	comm -> ip_redirect = NULL ;
 	comm -> op_redirect = NULL ;
+	comm -> data = NULL ;
 }
 
 command* parse(char* com)
@@ -80,5 +81,8 @@ command** parse_total(char* string , int* n)
 
 void free_commands(command** comms , int n)
 {
-
+	int i = 0 ;
+	for(; i < n ; i++)
+		free(comms[i]) ;
+	free(comms) ;
 }

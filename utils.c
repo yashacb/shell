@@ -87,11 +87,6 @@ char** split(char* string , char* delim)
 
 
 //Queue implementation
-typedef struct qnode
-{
-	char* string ;
-	struct qnode *next ;
-} QNode ;
 
 QNode* enqueue(QNode* start , QNode* end , char* string)
 {
@@ -159,4 +154,16 @@ QNode* getQ(QNode* head , QNode* end , int n)
 			current = current -> next ;
 		return current ;
 	}
+}
+
+void deleteQueue(QNode* head , QNode*end)
+{
+	QNode* current = head ;
+	while(head -> next != NULL)
+	{
+		current = head -> next ;
+		head -> next = current -> next ;
+		free((void*)current) ;
+	}
+	free((void*)head) ;
 }

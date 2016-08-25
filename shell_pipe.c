@@ -16,6 +16,7 @@
 
 int main()
 {
+	int i ;
 	char com[MAX_COMMAND_SIZE] ;
 	QNode* history_head = (QNode*) malloc(sizeof(QNode)) ;
 	QNode* history_end = history_head ; //dummy head
@@ -29,15 +30,7 @@ int main()
 		getchar() ;
 		int l = strlen(com) ;
 		char* ref = (char*) malloc(l*sizeof(char)) ;
-		strcpy(ref , com) ;
-		//recording history
-		if(size(history_head , history_end) < MAX_HISTORY_SIZE)
-			history_end = enqueue(history_head , history_end , ref) ;
-		else
-		{
-			history_end = deque(history_head , history_end) ;
-			history_end = enqueue(history_head , history_end , ref) ;
-		}
+		//retrieve command from history if needed .
 		if(com[0] == '!')
 		{
 			if(com[1] == '\0')
@@ -58,22 +51,47 @@ int main()
 					continue ;
 			}
 		}
+		//check for exit
+		if(strcmp(com , "exit") == 0)
+			break ;
+		//recording history
+		strcpy(ref , com) ;
+		if(size(history_head , history_end) < MAX_HISTORY_SIZE)
+			history_end = enqueue(history_head , history_end , ref) ;
+		else
+		{
+			history_end = deque(history_head , history_end) ;
+			history_end = enqueue(history_head , history_end , ref) ;
+		}
 		int pid = fork() ;
 		{
 			if(pid == 0)
 			{
+				sh_mem[0] = '\0' ;
 				int n = 0 ;
+				char hold[MAX_SHARED_MEMORY] ;
 				command** commands = parse_total(com , &n) ;
-				execute(commands[0] , sh_mem) ;
+				for(i = 0 ; i < n ; i++)
+				{
+					if(sh_mem[0] != '\0')
+					{
+						strcpy(hold , sh_mem) ;
+						commands[i] -> data = hold ;
+					}
+					execute(commands[i] , sh_mem , history_head , history_end) ;
+				}
+				free_commands(commands , n) ;
 				return 0 ;
 			}
 			else
 			{
 				wait() ;
-				printf("%s\n", sh_mem);
+				if(sh_mem[0] != '\0')
+					printf("%s\n", sh_mem);
 			}
 		}
 	}
+	deleteQueue(history_head , history_end) ;
 	shmdt((void*)sh_mem) ;
 	return 0;
 }
