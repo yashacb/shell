@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>	
+#include <curl/curl.h>
+#include <curl/easy.h>
 
 #include "headers.h"
 

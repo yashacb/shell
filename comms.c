@@ -17,6 +17,8 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		return sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
 		return grep(comm , sh_mem) ;
+	else if(strcmp(comm -> command , "wget") == 0)
+		return wget(comm , sh_mem) ;
 	else
 	{
 		strcpy(sh_mem , "Command not recognized") ;
@@ -297,5 +299,50 @@ int grep(command* com , char* sh_mem)
 		cc[0] = '\0' ;
 	}
 	return 1 ;
+}
+
+int wget(command* com , char* sh_mem)
+{
+	if(com -> arg == NULL)
+	{
+		strcpy(sh_mem , "Incorrect usage") ;
+		return 0 ;	
+	}
+	char* p = strchr(com -> arg , ' ') ;
+	if(p == NULL)
+	{
+		strcpy(sh_mem , "Incorrect usage") ;
+		return 0 ;	
+	}
+	*p = '\0' ;
+	p++ ;
+	CURL *curl;
+    FILE *fp;
+    CURLcode res;
+    char *url = com -> arg;
+    char* outfilename = p;
+    curl = curl_easy_init();
+    if (curl) 
+    {
+        fp = fopen(outfilename,"wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl CURLOPT_ERRORBUFFER, sh_mem); 
+        //only http proxy are available for now
+        curl_easy_setopt(curl, CURLOPT_PROXY, getenv("http_proxy"));
+        res = curl_easy_perform(curl);
+        if(res == CURLE_OK)
+        	strcpy(sh_mem , "Download complete") ;
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+    sh_mem[0] = '\0' ;
+}
+
+size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 
+{
+    size_t written = fwrite(ptr, size, nmemb, stream);
+    return written;
 }
 
