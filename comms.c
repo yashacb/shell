@@ -9,6 +9,8 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 {
 	if(strcmp(comm -> command , "ls") == 0)
 		list(comm , sh_mem) ;
+	else if(strcmp(comm->command,"cd")==0)
+		cd(comm, sh_mem);
 	else if(strcmp(comm -> command , "disp") == 0)
 		disp(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "history") == 0)
@@ -17,6 +19,8 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
 		grep(comm , sh_mem) ;
+	else if(strcmp(comm -> command, "who")==0)
+		who(comm , sh_mem);
 	return 1 ;
 }
 
@@ -219,3 +223,31 @@ void grep(command* com , char* sh_mem)
 	}
 }
 
+void cd(command *com,char *sh_mem)
+{
+	chdir(com->arg);
+}
+
+void who(command *com, char *sh_mem)
+{
+	struct utmp *user;
+	char *a;
+	int i;
+	setutent();
+	user=getutent();
+	while(user)
+	{
+		if(user->ut_type==7)
+		{
+			printf("%s ",user->ut_user);
+			printf("%s ",user->ut_line);
+			//sprintf(sh_mem, "%s ", user->ut_user);
+			//sprintf(sh_mem, "%-12s ",user->ut_line);
+			a=ctime((time_t *)&user->ut_time);
+			for(i=4;i<16;i++)
+				printf( "%c",a[i]);
+			printf("\n");
+		}
+		user=getutent();
+	}
+}

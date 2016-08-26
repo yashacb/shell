@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>	
+#include<time.h>
+#include<sys/utsname.h>
+#include<utmp.h>
+#include<sys/wait.h>
 
 #include "headers.h"
 
@@ -63,6 +67,7 @@ int main()
 			history_end = deque(history_head , history_end) ;
 			history_end = enqueue(history_head , history_end , ref) ;
 		}
+		int p;
 		int pid = fork() ;
 		{
 			if(pid == 0)
@@ -85,7 +90,7 @@ int main()
 			}
 			else
 			{
-				wait() ;
+				waitpid(pid,&p,0) ;
 				if(sh_mem[0] != '\0')
 					printf("%s\n", sh_mem);
 			}

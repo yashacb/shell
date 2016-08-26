@@ -12,7 +12,7 @@ command* init(command* comm)
 	comm -> data = NULL ;
 }
 
-command* parse(char* com)
+command* parse(char* com)	//parsing for single command
 {
 	purify(com) ;
 	int len = strlen(com) ;
@@ -64,7 +64,7 @@ void print_infos(command** comms , int n)
 	}
 }
 
-command** parse_total(char* string , int* n)
+command** parse_total(char* string , int* n)	//parsing for pipeline commands
 {
 	int oss = countOccurences(string , '|') ;
 	command** commands = (command**) malloc((oss) * sizeof(command*)) ;

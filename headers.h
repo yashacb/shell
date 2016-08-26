@@ -28,3 +28,5 @@ void history(command* com , char* sh_mem , QNode* history_head , QNode* history_
 void sort(command* com , char* sh_mem) ;
 int comp_func(const void* s1 , const void* s2) ;
 void grep(command* com , char* sh_mem) ;
+void cd(command *com,char *sh_mem);
+void who(command *com,char *sh_mem);
