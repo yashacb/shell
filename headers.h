@@ -1,10 +1,10 @@
 typedef struct command
 {
-	char* command ;
-	char* arg ;
-	char *ip_redirect ;
-	char* op_redirect ;
-	char* data ;
+	char* command ; // command name
+	char* arg ; // argument for the command , mostly a file or directory
+	char *ip_redirect ; // input redirect for the commnd . Technically useless :p
+	char* op_redirect ; // output is redirected to this file
+	char* data ; // the actual data on which the command works
 } command ;
 
 
@@ -22,9 +22,9 @@ void printArr(char** strings , int n)  ;
 char** split(char* string , char* delim) ;
 
 int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_end) ;
-void list(command* com , char* sh_mem) ;
-void disp(command* com , char* sh_mem) ;
-void history(command* com , char* sh_mem , QNode* history_head , QNode* history_end) ;
-void sort(command* com , char* sh_mem) ;
+int list(command* com , char* sh_mem) ;
+int disp(command* com , char* sh_mem) ;
+int history(command* com , char* sh_mem , QNode* history_head , QNode* history_end) ;
+int sort(command* com , char* sh_mem) ;
 int comp_func(const void* s1 , const void* s2) ;
-void grep(command* com , char* sh_mem) ;
+int grep(command* com , char* sh_mem) ;

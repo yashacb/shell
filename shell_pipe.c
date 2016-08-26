@@ -16,6 +16,12 @@
 
 int main()
 {
+	int n = MAX_SHARED_MEMORY ;
+	if(n < 1024)
+	{
+		printf("Minimum shared memory is 1024\n");
+		exit(0) ;
+	}
 	int i ;
 	char com[MAX_COMMAND_SIZE] ;
 	QNode* history_head = (QNode*) malloc(sizeof(QNode)) ;
@@ -55,7 +61,10 @@ int main()
 		}
 		//check for exit
 		if(strcmp(com , "exit") == 0)
+		{
+			free(ref) ;
 			break ;
+		}
 		//recording history
 		strcpy(ref , com) ;
 		if(size(history_head , history_end) < MAX_HISTORY_SIZE)
@@ -80,7 +89,9 @@ int main()
 						strcpy(hold , sh_mem) ;
 						commands[i] -> data = hold ;
 					}
-					execute(commands[i] , sh_mem , history_head , history_end) ;
+					int ret = execute(commands[i] , sh_mem , history_head , history_end) ;
+					if(!ret)
+						break ; // stop if atleast one is unsuccessful
 				}
 				deleteQueue(history_head , history_end) ;
 				free_commands(commands , n) ;

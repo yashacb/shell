@@ -8,27 +8,38 @@
 int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_end)
 {
 	if(strcmp(comm -> command , "ls") == 0)
-		list(comm , sh_mem) ;
+		return list(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "disp") == 0)
-		disp(comm , sh_mem) ;
+		return disp(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "history") == 0)
-		history(comm , sh_mem , history_head , history_end) ;
+		return history(comm , sh_mem , history_head , history_end) ;
 	else if(strcmp(comm -> command , "sort") == 0)
-		sort(comm , sh_mem) ;
+		return sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
-		grep(comm , sh_mem) ;
+		return grep(comm , sh_mem) ;
+	else
+	{
+		strcpy(sh_mem , "Command not recognized") ;
+		return 0 ;
+	}
 	return 1 ;
 }
 
-void list(command* com , char* sh_mem)
+int list(command* com , char* sh_mem)
 {
+	char* cc = sh_mem ;
 	char* directory ;
 	int to_free = 0 ;
-	if(com -> ip_redirect != NULL)
+	if(com -> ip_redirect != NULL) // take the first line of the file as directory if input redirect is present
 	{
 		directory = (char*) malloc(MAX_DIREC_SIZE*sizeof(char)) ;
 		to_free = 1 ;
 		FILE* fp = fopen(com -> ip_redirect , "r") ;
+		if(fp == NULL)
+		{
+			sprintf(sh_mem , "%s does not exist" , com -> ip_redirect) ;
+			return 0 ;
+		}
 		directory = fgets(directory , MAX_DIREC_SIZE , fp) ;
 		fclose(fp) ;
 	}
@@ -43,6 +54,11 @@ void list(command* com , char* sh_mem)
 		getcwd(directory , MAX_DIREC_SIZE) ;
 	}
 	DIR *dir = opendir(directory) ;
+	if(dir == NULL)
+	{
+		sprintf(sh_mem , "%s does not exist" , directory) ;
+		return 0 ;
+	}
 	struct dirent *entry = readdir(dir) ;
 	char *ptr = sh_mem ;
 	while(entry != NULL)
@@ -60,10 +76,19 @@ void list(command* com , char* sh_mem)
 	closedir(dir) ;
 	if(to_free == 1)
 		free(directory) ;
+	if(com -> op_redirect != NULL)
+	{
+		FILE* fp = fopen(com -> op_redirect , "w") ;
+		fwrite(cc , 1 , strlen(cc) , fp) ;
+		fclose(fp) ;
+		cc[0] = '\0' ;
+	}
+	return 1 ;
 }
 
-void disp(command* com , char* sh_mem)
+int disp(command* com , char* sh_mem)
 {
+	char* cc = sh_mem ;
 	if(com -> data != NULL)
 	{
 		strcpy(sh_mem , com -> data) ;
@@ -80,6 +105,11 @@ void disp(command* com , char* sh_mem)
 		return ;
 	}
 	FILE* fp = fopen(file , "rb") ;
+	if(fp == NULL)
+	{
+		sprintf(sh_mem , "%s does not exist" , file) ;
+		return 0 ;
+	}
 	int read , i = 0 ;
 	while((read = fgetc(fp)) != EOF)
 		sh_mem[i++] = read ;
@@ -90,10 +120,19 @@ void disp(command* com , char* sh_mem)
 		i-- ;
 	sh_mem[i + 1] = '\0' ;
 	fclose(fp) ;
+	if(com -> op_redirect != NULL)
+	{
+		FILE* fp = fopen(com -> op_redirect , "w") ;
+		fwrite(cc , 1 , strlen(cc) , fp) ;
+		fclose(fp) ;
+		cc[0] = '\0' ;
+	}
+	return 1 ;
 }
 
-void history(command* com , char* sh_mem , QNode* history_head , QNode* history_end)
+int history(command* com , char* sh_mem , QNode* history_head , QNode* history_end)
 {
+	char* cc = sh_mem ;
 	int i = 1 ;
 	QNode* current = history_head -> next ;
 	while(current != NULL)
@@ -104,9 +143,17 @@ void history(command* com , char* sh_mem , QNode* history_head , QNode* history_
 		current = current -> next ;
 	}
 	sh_mem[strlen(sh_mem) - 1] = '\0' ;
+	if(com -> op_redirect != NULL)
+	{
+		FILE* fp = fopen(com -> op_redirect , "w") ;
+		fwrite(cc , 1 , strlen(cc) , fp) ;
+		fclose(fp) ;
+		cc[0] = '\0' ;
+	}
+	return 1 ;
 }
 
-void sort(command* com , char* sh_mem)
+int sort(command* com , char* sh_mem)
 {
 	char* cc = sh_mem ;
 	int i = 0 ;
@@ -124,6 +171,11 @@ void sort(command* com , char* sh_mem)
 			return ;
 		}
 		FILE* fp = fopen(file , "r") ;
+		if(fp == NULL)
+		{
+			sprintf(sh_mem , "%s does not exist" , file) ;
+			return 0 ;
+		}
 		fseek(fp , 0 , SEEK_END) ;
 		rewind(fp) ;
 		int read  ;
@@ -157,7 +209,17 @@ void sort(command* com , char* sh_mem)
 		else
 			sprintf(sh_mem , "%s" , ps[i]) ;	
 		sh_mem = sh_mem + strlen(sh_mem) ;
+		if(sh_mem - cc > MAX_SHARED_MEMORY)//do not write out of shared memory !
+				break ;
 	}
+	if(com -> op_redirect != NULL)
+	{
+		FILE* fp = fopen(com -> op_redirect , "w") ;
+		fwrite(cc , 1 , strlen(cc) , fp) ;
+		fclose(fp) ;
+		cc[0] = '\0' ;
+	}
+	return 1 ;
 }
 
 int comp_func(const void* s1 , const void* s2) // comparison functions for qsort
@@ -166,7 +228,7 @@ int comp_func(const void* s1 , const void* s2) // comparison functions for qsort
 	return strcmp(*((char**)s1) , *((char**)s2)) ;
 }
 
-void grep(command* com , char* sh_mem)
+int grep(command* com , char* sh_mem)
 {	
 	char* cc = sh_mem ;
 	int i = 0 ;
@@ -178,12 +240,17 @@ void grep(command* com , char* sh_mem)
 		if(space == NULL)
 		{
 			sprintf(sh_mem , "Incorrect usage") ;
-			return ;
+			return 0;
 		}
 		*space = '\0' ;
 		search = space + 1 ;
 		char* file = com -> arg ;
 		FILE* fp = fopen(file , "r") ;
+		if(fp == NULL)
+		{
+			sprintf(sh_mem , "%s does not exist" , file) ;
+			return 0 ;
+		}
 		fseek(fp , 0 , SEEK_END) ;
 		rewind(fp) ;
 		int read = fread((void*)contents , 1 , MAX_SHARED_MEMORY - 2 , fp) ;
@@ -222,5 +289,13 @@ void grep(command* com , char* sh_mem)
 				break ;
 		}
 	}
+	if(com -> op_redirect != NULL)
+	{
+		FILE* fp = fopen(com -> op_redirect , "w") ;
+		fwrite(cc , 1 , strlen(cc) , fp) ;
+		fclose(fp) ;
+		cc[0] = '\0' ;
+	}
+	return 1 ;
 }
 
