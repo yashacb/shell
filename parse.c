@@ -12,7 +12,7 @@ command* init(command* comm)
 	comm -> data = NULL ;
 }
 
-command* parse(char* com)	//parsing for single command
+command* parse(char* com) //parses a plain command
 {
 	purify(com) ;
 	int len = strlen(com) ;
@@ -64,10 +64,11 @@ void print_infos(command** comms , int n)
 	}
 }
 
-command** parse_total(char* string , int* n)	//parsing for pipeline commands
+command** parse_total(char* string , int* n) // parses command containing pipes
 {
+	purify(string) ;
 	int oss = countOccurences(string , '|') ;
-	command** commands = (command**) malloc((oss) * sizeof(command*)) ;
+	command** commands = (command**) malloc((oss + 1) * sizeof(*commands)) ;
 	char* p = strtok(string , "|")  ;
 	int i = 0 ;
 	while(p != NULL) 
@@ -79,10 +80,12 @@ command** parse_total(char* string , int* n)	//parsing for pipeline commands
 	return (command**) commands ;
 }
 
-void free_commands(command** comms , int n)
+void free_commands(command** comms , int n) // frees heap space
 {
 	int i = 0 ;
 	for(; i < n ; i++)
+	{
 		free(comms[i]) ;
+	}
 	free(comms) ;
 }

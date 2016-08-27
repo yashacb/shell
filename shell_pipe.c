@@ -20,9 +20,17 @@
 
 int main()
 {
+	int n = MAX_SHARED_MEMORY ;
+	if(n < 1024)
+	{
+		printf("Minimum shared memory is 1024\n");
+		exit(0) ;
+	}
 	int i ;
 	char com[MAX_COMMAND_SIZE] ;
 	QNode* history_head = (QNode*) malloc(sizeof(QNode)) ;
+	history_head -> next = NULL ;
+	history_head -> string = NULL ;
 	QNode* history_end = history_head ; //dummy head
 	int shm_id = shmget(IPC_PRIVATE , MAX_SHARED_MEMORY * sizeof(char) , IPC_CREAT | 0666) ;
 	char* sh_mem = (char *) shmat(shm_id , NULL , 0) ;
@@ -33,7 +41,7 @@ int main()
 		scanf("%[^\n]" , com) ;
 		getchar() ;
 		int l = strlen(com) ;
-		char* ref = (char*) malloc(l*sizeof(char)) ;
+		char* ref = (char*) malloc((l + 1)*sizeof(char)) ;
 		//retrieve command from history if needed .
 		if(com[0] == '!')
 		{
@@ -46,7 +54,7 @@ int main()
 			else
 			{
 				int n = atoi(com + 1) ;
-				if(n <= MAX_HISTORY_SIZE)
+				if(n <= MAX_HISTORY_SIZE && n > 0)
 				{
 					QNode* req = getQ(history_head , history_end , n) ;
 					strcpy(com , req -> string) ;
@@ -57,7 +65,10 @@ int main()
 		}
 		//check for exit
 		if(strcmp(com , "exit") == 0)
+		{
+			free(ref) ;
 			break ;
+		}
 		//recording history
 		strcpy(ref , com) ;
 		if(size(history_head , history_end) < MAX_HISTORY_SIZE)
@@ -67,7 +78,6 @@ int main()
 			history_end = deque(history_head , history_end) ;
 			history_end = enqueue(history_head , history_end , ref) ;
 		}
-		int p;
 		int pid = fork() ;
 		{
 			if(pid == 0)
@@ -83,14 +93,17 @@ int main()
 						strcpy(hold , sh_mem) ;
 						commands[i] -> data = hold ;
 					}
-					execute(commands[i] , sh_mem , history_head , history_end) ;
+					int ret = execute(commands[i] , sh_mem , history_head , history_end) ;
+					if(!ret)
+						break ; // stop if atleast one is unsuccessful
 				}
+				deleteQueue(history_head , history_end) ;
 				free_commands(commands , n) ;
 				return 0 ;
 			}
 			else
 			{
-				waitpid(pid,&p,0) ;
+				wait(NULL) ;
 				if(sh_mem[0] != '\0')
 					printf("%s\n", sh_mem);
 			}

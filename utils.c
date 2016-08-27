@@ -69,23 +69,6 @@ void printArr(char** strings , int n)
 		printf("%s\n", strings[i]);
 }
 
-char** split(char* string , char* delim)
-{
-	int len = strlen(string) ;
-	if(string[len - 1] == delim[0])
-		string[len - 1] = '\0' ;
-	char** strings = (char**) malloc((countOccurences(string , delim[0]) + 1) * sizeof(int)) ;
-	char* res = strtok(string , delim) ;
-	int i = 0 ;
-	while(res != NULL)
-	{
-		strings[i++] = res ;
-		res = strtok(NULL , delim) ;
-	}
-	return strings ;
-}
-
-
 //Queue implementation
 
 QNode* enqueue(QNode* start , QNode* end , char* string)
@@ -109,7 +92,10 @@ QNode* deque(QNode* head , QNode* end)
 		}
 		else
 		{
+			QNode* to_del = head -> next ;
 			head -> next = head -> next -> next ;
+			free(to_del -> string) ;
+			free(to_del) ;
 		}
 	}
 	return end ;
@@ -117,7 +103,7 @@ QNode* deque(QNode* head , QNode* end)
 
 int size(QNode* head , QNode* end)
 {
-	if(head -> next == NULL)
+	if(head != NULL && head -> next == NULL)
 		return 0 ;
 	else
 	{
@@ -163,6 +149,7 @@ void deleteQueue(QNode* head , QNode*end)
 	{
 		current = head -> next ;
 		head -> next = current -> next ;
+		free(current -> string) ;
 		free((void*)current) ;
 	}
 	free((void*)head) ;
