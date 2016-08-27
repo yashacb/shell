@@ -14,6 +14,8 @@ typedef struct qnode
 	struct qnode *next ;
 } QNode ;
 
+static char** my_completion(const char*, int ,int);
+
 int lastIndexOf(char *str , char c) ;
 int firstIndexOf(char* str , char c) ;
 int countOccurences(char *str , char c) ;

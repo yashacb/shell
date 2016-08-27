@@ -1,8 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <curl/curl.h>
+curious
+melancholy
+rage
+sorrow
+apathy
+sympathy
+masked
+destruction
+prejudice
+envy
+greed
 
-int main()
-{
-	printf("%s\n", getenv("http_proxy"));
-}
+
+
+
+
+
+reluctant
+relentless
+restore

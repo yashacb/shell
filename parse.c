@@ -66,7 +66,6 @@ void print_infos(command** comms , int n)
 
 command** parse_total(char* string , int* n) // parses command containing pipes
 {
-	purify(string) ;
 	int oss = countOccurences(string , '|') ;
 	command** commands = (command**) malloc((oss + 1) * sizeof(*commands)) ;
 	char* p = strtok(string , "|")  ;
