@@ -94,7 +94,7 @@ int disp(command* com , char* sh_mem)
 	if(com -> data != NULL)
 	{
 		strcpy(sh_mem , com -> data) ;
-		return ;
+		return 1;
 	}
 	char* file = NULL ;
 	if(com -> ip_redirect != NULL)
@@ -104,7 +104,7 @@ int disp(command* com , char* sh_mem)
 	else
 	{
 		strcpy(sh_mem , "No file given") ;
-		return ;
+		return 0;
 	}
 	FILE* fp = fopen(file , "rb") ;
 	if(fp == NULL)
@@ -113,7 +113,7 @@ int disp(command* com , char* sh_mem)
 		return 0 ;
 	}
 	int read , i = 0 ;
-	while((read = fgetc(fp)) != EOF)
+	while(i < MAX_SHARED_MEMORY - 1 && (read = fgetc(fp)) != EOF)
 		sh_mem[i++] = read ;
 	if(read != '\n')
 		sh_mem[i++] = '\n' ;
@@ -170,7 +170,7 @@ int sort(command* com , char* sh_mem)
 		else
 		{
 			strcpy(sh_mem , "No file given") ;
-			return ;
+			return 0;
 		}
 		FILE* fp = fopen(file , "r") ;
 		if(fp == NULL)
@@ -328,7 +328,7 @@ int wget(command* com , char* sh_mem)
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_setopt(curl CURLOPT_ERRORBUFFER, sh_mem); 
+        curl_easy_setopt(curl,  CURLOPT_ERRORBUFFER, sh_mem); 
         //only http proxy are available for now
         curl_easy_setopt(curl, CURLOPT_PROXY, getenv("http_proxy"));
         res = curl_easy_perform(curl);
@@ -338,6 +338,7 @@ int wget(command* com , char* sh_mem)
         fclose(fp);
     }
     sh_mem[0] = '\0' ;
+    return 1 ;
 }
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 

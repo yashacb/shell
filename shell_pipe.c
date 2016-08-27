@@ -47,7 +47,13 @@ int main()
 				continue ;
 			else if(com[1] == '!')
 			{
-				strcpy(com , history_end -> string) ;
+				if(history_head != history_end)
+					strcpy(com , history_end -> string) ;
+				else
+				{
+					printf("No previous command found .\n");
+					continue ;
+				}
 			}
 			else
 			{
@@ -101,7 +107,8 @@ int main()
 			}
 			else
 			{
-				wait(NULL) ;
+				int status ;
+				wait(&status) ;
 				if(sh_mem[0] != '\0')
 					printf("%s\n", sh_mem);
 			}

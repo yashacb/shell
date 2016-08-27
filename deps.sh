@@ -1,2 +1,2 @@
 sudo apt-get install libcurl4-gnutls-dev
-#use flag -libcurl
+sudo apt-get install libreadline-dev
