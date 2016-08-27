@@ -50,16 +50,18 @@ void purify(char *string)
 		i++ ;
 	while(string[i] != '\0')
 	{
-		if(string[i] != ' ')
+		if(strchr("\n \t" , string[i]) == NULL)
 			string[i_pos++] = string[i++] ;
 		else
 		{
-			while(string[i] == ' ' && string[i+1] == ' ')
+			if(strchr("\n \t" , string[i]) != NULL && 
+				strchr("\n \t" , string[i + 1]) != NULL)
 				i++ ;
-			string[i_pos++] = string[i++] ;
+			else
+				string[i_pos++] = string[i++] ;
 		}
 	}
-	if(string[i_pos - 1] == ' ')
+	if(strchr("\n \t" , string[i_pos - 1]) != NULL)
 		string[i_pos - 1] = '\0' ;
 	else
 		string[i_pos] = '\0' ;

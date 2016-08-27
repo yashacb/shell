@@ -201,6 +201,7 @@ int sort(command* com , char* sh_mem)
 	{
 		strcpy(contents , com -> data) ;
 	}
+	purify(contents) ;
 	int len = strlen(contents) ;
 	int lines = countOccurences(contents , '\n') + 1 ;
 	char* ps[lines] ;
@@ -239,7 +240,7 @@ int comp_func(const void* s1 , const void* s2) // comparison functions for qsort
 }
 
 int grep(command* com , char* sh_mem)
-{	
+{
 	char* cc = sh_mem ;
 	int i = 0 ;
 	char contents[MAX_SHARED_MEMORY] ;
@@ -273,11 +274,7 @@ int grep(command* com , char* sh_mem)
 		strcpy(contents , com -> data) ;
 	}
 	int len = strlen(contents) ;
-	if(contents[len - 1] != '\n') ;
-	{
-		contents[len] =  '\n' ;
-		contents[len + 1] = '\0' ;
-	}
+	purify(contents) ;
 	int lines = countOccurences(contents , '\n') ;
 	char* ps[lines] ;
 	char* l = strtok(contents , "\n") ;
