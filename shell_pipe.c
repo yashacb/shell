@@ -6,15 +6,17 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>	
-<<<<<<< HEAD
+
+#include<fcntl.h>
+#include<sys/stat.h>
+
 #include<time.h>
 #include<sys/utsname.h>
 #include<utmp.h>
 #include<sys/wait.h>
-=======
+
 #include <curl/curl.h>
 #include <curl/easy.h>
->>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
 
 #include "headers.h"
 

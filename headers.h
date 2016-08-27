@@ -28,10 +28,14 @@ int history(command* com , char* sh_mem , QNode* history_head , QNode* history_e
 int sort(command* com , char* sh_mem) ;
 int comp_func(const void* s1 , const void* s2) ;
 int grep(command* com , char* sh_mem) ;
-<<<<<<< HEAD
 int cd(command *com,char *sh_mem);
 int who(command *com,char *sh_mem);
-=======
 int wget(command* com , char* sh_mem) ;
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)  ;
->>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
+int cpy(command *com, char *sh_mem);
+void printerror(char *, char *);
+int copyDir(char *src, char *dest);
+int copyFiles(char *src, char *dest);
+int dostat(char *filename);
+int printdir(command *com,char *sh_mem);
+int print_dir(char *dir, int depth);

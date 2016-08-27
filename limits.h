@@ -4,4 +4,6 @@
 
 
 #define MAX_DIREC_SIZE 100 //maximum size of directory in the file system
+#define BUFFERSIZE 1024
+#define COPYMORE 0644
 

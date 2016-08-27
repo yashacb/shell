@@ -4,6 +4,9 @@
 //add function declarations to the header file also . 
 //String functions
 
+#define BUFFERSIZE 1024
+#define COPYMORE 0644
+
 int lastIndexOf(char *str , char c)
 {
 	int len = strlen(str) ;
@@ -153,4 +156,74 @@ void deleteQueue(QNode* head , QNode*end)
 		free((void*)current) ;
 	}
 	free((void*)head) ;
+}
+
+int copyDir( char *source, char *destination)
+{
+	DIR *dir=NULL;
+	struct dirent *direntptr;
+	char *dupdest = (char *)malloc( (strlen(destination)+1)*sizeof(char));
+	char *dupsrc = (char *)malloc( (strlen(source)+1)*sizeof(char));
+	strcat(destination, "/");
+	strcat(source, "/");
+	strcpy(dupdest, destination);
+	strcpy(dupsrc, source);
+	struct stat fileinfo;
+	if((dir = opendir(source)) == NULL)
+	{
+		fprintf(stderr, "Cannot open %s for copying\n", source);
+		return 0;
+	}
+	else
+	{
+		while((direntptr = readdir(dir)))
+		{
+			if(dostat(direntptr->d_name))
+			{
+				strcat(dupdest, direntptr->d_name);
+				strcat(dupsrc, direntptr->d_name);
+				copyFiles(dupsrc, dupdest);
+				strcpy(dupdest, destination);
+				strcpy(dupsrc, source);
+			}
+		}
+		closedir(dir);
+		return 1;
+	}
+}
+
+int dostat(char *filename)
+{
+	struct stat fileinfo;
+	if(stat(filename, &fileinfo) >= 0)
+		if(S_ISREG(fileinfo.st_mode))
+			return 1;
+	else return 0;
+}
+
+int copyFiles(char *source, char *destination)
+{
+	int in,out,n;
+	char *buf = (char *)malloc(BUFFERSIZE*sizeof(char));
+	if( (in = open(source, O_RDONLY)) == -1)
+		printerror("cannot open ", source);
+	if( (out = creat(destination, COPYMORE)) == -1)
+		printerror("cannot create ", destination);
+	while( (n = read(in,buf, BUFFERSIZE)) > 0)
+	{
+		if(write(out, buf, n) != n)
+			printerror("Write error to ",destination);
+		if(n == -1) 
+			printerror("Read error from ", source);
+	}
+	if( close(in) == -1 || close(out) ==-1 )
+		printerror("Error closing files ", "");
+	return 1;
+}
+
+void printerror(char *a, char *b)
+{
+	fprintf(stderr, "Error :%s ", a);
+	perror(b);
+	exit(1);
 }

@@ -19,13 +19,14 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		return sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
 		return grep(comm , sh_mem) ;
-<<<<<<< HEAD
 	else if(strcmp(comm -> command, "who")==0)
 		return who(comm , sh_mem);
-=======
 	else if(strcmp(comm -> command , "wget") == 0)
 		return wget(comm , sh_mem) ;
->>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
+	else if(strcmp(comm->command,"cpy")==0)
+		return cpy(comm, sh_mem);
+	else if(strcmp(comm -> command, "printdir") == 0)
+		return printdir(comm, sh_mem);
 	else
 	{
 		strcpy(sh_mem , "Command not recognized") ;
@@ -308,7 +309,6 @@ int grep(command* com , char* sh_mem)
 	return 1 ;
 }
 
-<<<<<<< HEAD
 int cd(command *com,char *sh_mem)
 {
 	chdir(com->arg);
@@ -339,7 +339,6 @@ int who(command *com, char *sh_mem)
 	}
 	return 1;
 }
-=======
 int wget(command* com , char* sh_mem)
 {
 	if(com -> arg == NULL)
@@ -386,4 +385,75 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return written;
 }
 
->>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
+int cpy(command *comm, char *sh_mem)
+{
+	int temp = countOccurences( comm -> arg , ' ');
+	if(temp < 1)
+	{
+		fprintf( stderr , "Usage : %s source destination \n", comm->command);
+		exit(1);
+	}
+	int pos=firstIndexOf(comm -> arg, ' ');
+	comm -> arg[pos]='\0';
+	char *src = comm -> arg;
+	char *dest = comm -> arg + pos + 1;
+	if( src[0] != '/' && dest[0] != '/')
+		copyFiles(src, dest);
+	else if(src[0] !='/' && dest[0] == '/' )
+	{
+		int i;
+		for(i = 1 ; i <= strlen(dest) ; i++)
+			dest[i-1]=dest[i];
+		strcat(dest , "/");
+		strcat(dest , src );
+		copyFiles(src, dest);
+	}
+	else if(src[0] == '/' && dest[0] == '/' )
+	{
+		int i;
+		for(i=1 ; i <= strlen(dest) ; i++)
+			dest[i-1] = dest[i] ;
+		for(i=1 ; i<= strlen(src) ; i++)
+			src[i-1]=src[i];
+		copyDir(src , dest );
+	}
+	else
+	{
+		fprintf(stderr, " Usage: cpy source destination \n");
+		exit(1);
+	}
+	return 1;
+}
+
+int printdir(command *comm, char *sh_mem)
+{
+	return print_dir(comm->arg,  0);
+}
+
+int print_dir(char *dir,  int depth)
+{
+	DIR *directory;
+	struct dirent *start;
+	struct stat statbuf;
+	if( (directory = opendir(dir)) == NULL)
+	{
+		fprintf(stderr, "Cannot open directory : %s\n", dir);
+		return 0;
+	}
+	chdir(dir);
+	while( (start = readdir(directory)) != NULL)
+	{
+		lstat(start -> d_name, &statbuf);
+		if( S_ISDIR(statbuf.st_mode))
+		{
+			if(strcmp(".",start->d_name) == 0 || strcmp(".." , start->d_name) == 0)
+				continue;
+			printf( "%*s%s/\n",depth,"", start->d_name);
+			print_dir(start->d_name,depth+4);
+		}
+		else
+			printf( "%*s%s\n",depth,"",start->d_name);
+	}
+	chdir("..");
+	closedir(directory);
+}
