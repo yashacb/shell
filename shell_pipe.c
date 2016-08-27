@@ -6,10 +6,15 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>	
+<<<<<<< HEAD
 #include<time.h>
 #include<sys/utsname.h>
 #include<utmp.h>
 #include<sys/wait.h>
+=======
+#include <curl/curl.h>
+#include <curl/easy.h>
+>>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
 
 #include "headers.h"
 
@@ -49,7 +54,13 @@ int main()
 				continue ;
 			else if(com[1] == '!')
 			{
-				strcpy(com , history_end -> string) ;
+				if(history_head != history_end)
+					strcpy(com , history_end -> string) ;
+				else
+				{
+					printf("No previous command found .\n");
+					continue ;
+				}
 			}
 			else
 			{
@@ -103,7 +114,8 @@ int main()
 			}
 			else
 			{
-				wait(NULL) ;
+				int status ;
+				wait(&status) ;
 				if(sh_mem[0] != '\0')
 					printf("%s\n", sh_mem);
 			}

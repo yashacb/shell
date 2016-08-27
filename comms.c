@@ -19,8 +19,13 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		return sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
 		return grep(comm , sh_mem) ;
+<<<<<<< HEAD
 	else if(strcmp(comm -> command, "who")==0)
 		return who(comm , sh_mem);
+=======
+	else if(strcmp(comm -> command , "wget") == 0)
+		return wget(comm , sh_mem) ;
+>>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
 	else
 	{
 		strcpy(sh_mem , "Command not recognized") ;
@@ -96,7 +101,7 @@ int disp(command* com , char* sh_mem)
 	if(com -> data != NULL)
 	{
 		strcpy(sh_mem , com -> data) ;
-		return ;
+		return 1;
 	}
 	char* file = NULL ;
 	if(com -> ip_redirect != NULL)
@@ -106,7 +111,7 @@ int disp(command* com , char* sh_mem)
 	else
 	{
 		strcpy(sh_mem , "No file given") ;
-		return ;
+		return 0;
 	}
 	FILE* fp = fopen(file , "rb") ;
 	if(fp == NULL)
@@ -115,7 +120,7 @@ int disp(command* com , char* sh_mem)
 		return 0 ;
 	}
 	int read , i = 0 ;
-	while((read = fgetc(fp)) != EOF)
+	while(i < MAX_SHARED_MEMORY - 1 && (read = fgetc(fp)) != EOF)
 		sh_mem[i++] = read ;
 	if(read != '\n')
 		sh_mem[i++] = '\n' ;
@@ -172,7 +177,7 @@ int sort(command* com , char* sh_mem)
 		else
 		{
 			strcpy(sh_mem , "No file given") ;
-			return ;
+			return 0;
 		}
 		FILE* fp = fopen(file , "r") ;
 		if(fp == NULL)
@@ -303,6 +308,7 @@ int grep(command* com , char* sh_mem)
 	return 1 ;
 }
 
+<<<<<<< HEAD
 int cd(command *com,char *sh_mem)
 {
 	chdir(com->arg);
@@ -333,3 +339,51 @@ int who(command *com, char *sh_mem)
 	}
 	return 1;
 }
+=======
+int wget(command* com , char* sh_mem)
+{
+	if(com -> arg == NULL)
+	{
+		strcpy(sh_mem , "Incorrect usage") ;
+		return 0 ;	
+	}
+	char* p = strchr(com -> arg , ' ') ;
+	if(p == NULL)
+	{
+		strcpy(sh_mem , "Incorrect usage") ;
+		return 0 ;	
+	}
+	*p = '\0' ;
+	p++ ;
+	CURL *curl;
+    FILE *fp;
+    CURLcode res;
+    char *url = com -> arg;
+    char* outfilename = p;
+    curl = curl_easy_init();
+    if (curl) 
+    {
+        fp = fopen(outfilename,"wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl,  CURLOPT_ERRORBUFFER, sh_mem); 
+        //only http proxy are available for now
+        curl_easy_setopt(curl, CURLOPT_PROXY, getenv("http_proxy"));
+        res = curl_easy_perform(curl);
+        if(res == CURLE_OK)
+        	strcpy(sh_mem , "Download complete") ;
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+    sh_mem[0] = '\0' ;
+    return 1 ;
+}
+
+size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) 
+{
+    size_t written = fwrite(ptr, size, nmemb, stream);
+    return written;
+}
+
+>>>>>>> 808c2301c92f4da40c0fa81cd695b4696411a2b0
