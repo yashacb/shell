@@ -1,0 +1,2 @@
+All the commands for the shell are implemented by . Hence they require two external libraries to work . They are curl and readline .
+First run "bash deps.sh" from the current directory

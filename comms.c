@@ -9,8 +9,6 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 {
 	if(strcmp(comm -> command , "ls") == 0)
 		return list(comm , sh_mem) ;
-	else if(strcmp(comm->command,"cd")==0)
-		return cd(comm, sh_mem);
 	else if(strcmp(comm -> command , "disp") == 0)
 		return disp(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "history") == 0)
@@ -23,13 +21,15 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		return who(comm , sh_mem);
 	else if(strcmp(comm -> command , "wget") == 0)
 		return wget(comm , sh_mem) ;
-	else if(strcmp(comm->command,"cpy")==0)
+	else if(strcmp(comm->command,"cpy") == 0)
 		return cpy(comm, sh_mem);
-	else if(strcmp(comm -> command, "printdir") == 0)
-		return printdir(comm, sh_mem);
+	else if(strcmp(comm->command,"pwd") == 0)
+		return pwd(comm, sh_mem);
+	else if(strcmp(comm->command,"mkdir") == 0)
+		return makedir(comm, sh_mem);
 	else
 	{
-		strcpy(sh_mem , "Command not recognized") ;
+		strcpy(sh_mem , "Unknkown command .") ;
 		return 0 ;
 	}
 	return 1 ;
@@ -40,20 +40,7 @@ int list(command* com , char* sh_mem)
 	char* cc = sh_mem ;
 	char* directory ;
 	int to_free = 0 ;
-	if(com -> ip_redirect != NULL) // take the first line of the file as directory if input redirect is present
-	{
-		directory = (char*) malloc(MAX_DIREC_SIZE*sizeof(char)) ;
-		to_free = 1 ;
-		FILE* fp = fopen(com -> ip_redirect , "r") ;
-		if(fp == NULL)
-		{
-			sprintf(sh_mem , "%s does not exist" , com -> ip_redirect) ;
-			return 0 ;
-		}
-		directory = fgets(directory , MAX_DIREC_SIZE , fp) ;
-		fclose(fp) ;
-	}
-	else if(com -> arg != NULL)
+	if(com -> arg != NULL)
 	{
 		directory = com -> arg ;
 	}
@@ -306,36 +293,30 @@ int grep(command* com , char* sh_mem)
 	return 1 ;
 }
 
-int cd(command *com,char *sh_mem)
-{
-	chdir(com->arg);
-	return 1;
-}
-
 int who(command *com, char *sh_mem)
 {
 	struct utmp *user;
 	char *a;
 	int i;
 	setutent();
-	user=getutent();
+	user = getutent();
 	while(user)
 	{
-		if(user->ut_type==7)
+		if(user -> ut_type == 7)
 		{
-			printf("%s ",user->ut_user);
-			printf("%s ",user->ut_line);
-			//sprintf(sh_mem, "%s ", user->ut_user);
-			//sprintf(sh_mem, "%-12s ",user->ut_line);
-			a=ctime((time_t *)&user->ut_time);
-			for(i=4;i<16;i++)
-				printf( "%c",a[i]);
-			printf("\n");
+			sprintf(sh_mem, "%s", user -> ut_user);
 		}
-		user=getutent();
+		user = getutent();
 	}
 	return 1;
 }
+
+int pwd(command *com , char* sh_mem) 
+{
+	getcwd(sh_mem , MAX_SHARED_MEMORY) ;
+	return 1 ;
+}
+
 int wget(command* com , char* sh_mem)
 {
 	if(com -> arg == NULL)
@@ -368,11 +349,13 @@ int wget(command* com , char* sh_mem)
         curl_easy_setopt(curl, CURLOPT_PROXY, getenv("http_proxy"));
         res = curl_easy_perform(curl);
         if(res == CURLE_OK)
-        	strcpy(sh_mem , "Download complete") ;
+        	sprintf(sh_mem , "Download complete . Saved to %s" , outfilename) ;
+        else
+        	strcpy(sh_mem , "Error encountered . Check proxy settings "
+        		"and try again .") ;
         curl_easy_cleanup(curl);
         fclose(fp);
     }
-    sh_mem[0] = '\0' ;
     return 1 ;
 }
 
@@ -387,7 +370,7 @@ int cpy(command *comm, char *sh_mem)
 	int temp = countOccurences( comm -> arg , ' ');
 	if(temp < 1)
 	{
-		fprintf( stderr , "Usage : %s source destination \n", comm->command);
+		sprintf(sh_mem , "Usage : %s source destination \n", comm->command);
 		exit(1);
 	}
 	int pos=firstIndexOf(comm -> arg, ' ');
@@ -400,7 +383,7 @@ int cpy(command *comm, char *sh_mem)
 	{
 		int i;
 		for(i = 1 ; i <= strlen(dest) ; i++)
-			dest[i-1]=dest[i];
+			dest[i-1] = dest[i];
 		strcat(dest , "/");
 		strcat(dest , src );
 		copyFiles(src, dest);
@@ -416,41 +399,24 @@ int cpy(command *comm, char *sh_mem)
 	}
 	else
 	{
-		fprintf(stderr, " Usage: cpy source destination \n");
-		exit(1);
-	}
+		sprintf(sh_mem, " Usage: cpy <source> <destination> \n");
+		return 0 ;
+	}sh_mem[0] = '\0' ;
 	return 1;
 }
 
-int printdir(command *comm, char *sh_mem)
+int makedir(command* com , char* sh_mem)
 {
-	return print_dir(comm->arg,  0);
-}
-
-int print_dir(char *dir,  int depth)
-{
-	DIR *directory;
-	struct dirent *start;
-	struct stat statbuf;
-	if( (directory = opendir(dir)) == NULL)
+	if(com -> arg == NULL)
 	{
-		fprintf(stderr, "Cannot open directory : %s\n", dir);
-		return 0;
+		sprintf(sh_mem , "No directory given") ;
+		return 0 ;
 	}
-	chdir(dir);
-	while( (start = readdir(directory)) != NULL)
+	int res = mkdir(com -> arg , 0700) ;
+	if(res == -1)
 	{
-		lstat(start -> d_name, &statbuf);
-		if( S_ISDIR(statbuf.st_mode))
-		{
-			if(strcmp(".",start->d_name) == 0 || strcmp(".." , start->d_name) == 0)
-				continue;
-			printf( "%*s%s/\n",depth,"", start->d_name);
-			print_dir(start->d_name,depth+4);
-		}
-		else
-			printf( "%*s%s\n",depth,"",start->d_name);
+		sprintf(sh_mem , "Unable to create directory") ;
+		return 0 ;
 	}
-	chdir("..");
-	closedir(directory);
+	return 1 ;
 }

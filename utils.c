@@ -160,6 +160,8 @@ void deleteQueue(QNode* head , QNode*end)
 	free((void*)head) ;
 }
 
+//Copy command utilities
+
 int copyDir( char *source, char *destination)
 {
 	DIR *dir=NULL;

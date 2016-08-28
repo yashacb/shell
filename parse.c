@@ -29,6 +29,7 @@ command* parse(char* com) //parses a plain command
 	if(pos != -1)
 	{
 		parsed -> ip_redirect = com + pos + 2 ;
+		com[pos - 1] = '\0' ;
 	}
 	else
 	{
