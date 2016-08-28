@@ -112,15 +112,17 @@ int main()
 			history_end = deque(history_head , history_end) ;
 			history_end = enqueue(history_head , history_end , ref) ;
 		}
+		//create a new child process
 		int pid = fork() ;
 		{
 			if(pid == 0)
 			{
-				sh_mem[0] = '\0' ;
+				//things to do int child process
+				sh_mem[0] = '\0' ; //reset shared memory
 				int n = 0 ;
 				char hold[MAX_SHARED_MEMORY] ;
-				command** commands = parse_total(com , &n) ;
-				for(i = 0 ; i < n ; i++)
+				command** commands = parse_total(com , &n) ; //parse the command
+				for(i = 0 ; i < n ; i++) //execute the chain of commands
 				{
 					if(sh_mem[0] != '\0')
 					{
@@ -131,20 +133,21 @@ int main()
 					if(!ret)
 						break ; // stop if atleast one is unsuccessful
 				}
-				deleteQueue(history_head , history_end) ;
-				free_commands(commands , n) ;
+				deleteQueue(history_head , history_end) ; //release the queue memory of the child process . Detected this memory leak with valgrind
+				free_commands(commands , n) ; // free memory allocated to commands
 				return 0 ;
 			}
 			else
 			{
-				wait(NULL) ;
+				int status ;
+				wait(&status) ; //wait for child process to end
 				if(sh_mem[0] != '\0')
-					printf("%s\n", sh_mem);
+					printf("%s\n", sh_mem); //print the output of the command if any
 			}
 		}
 	}
-	deleteQueue(history_head , history_end) ;
-	shmdt((void*)sh_mem) ;
+	deleteQueue(history_head , history_end) ; //release memory at the end .
+	shmdt((void*)sh_mem) ; //detach the shared memory
 	return 0;
 }
 

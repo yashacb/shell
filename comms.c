@@ -7,6 +7,7 @@
 
 int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_end)
 {
+	//check for appropriate command to execute
 	if(strcmp(comm -> command , "ls") == 0)
 		return list(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "disp") == 0)
@@ -17,15 +18,15 @@ int execute(command* comm , char* sh_mem , QNode* history_head , QNode* history_
 		return sort(comm , sh_mem) ;
 	else if(strcmp(comm -> command , "grep") == 0)
 		return grep(comm , sh_mem) ;
-	else if(strcmp(comm -> command, "who")==0)
+	else if(strcmp(comm -> command, "who") == 0)
 		return who(comm , sh_mem);
 	else if(strcmp(comm -> command , "wget") == 0)
 		return wget(comm , sh_mem) ;
-	else if(strcmp(comm->command,"cpy") == 0)
-		return cpy(comm, sh_mem);
-	else if(strcmp(comm->command,"pwd") == 0)
+	else if(strcmp(comm->command , "cpy") == 0)
+		return cpy(comm, sh_mem) ;	
+	else if(strcmp(comm->command , "pwd") == 0)
 		return pwd(comm, sh_mem);
-	else if(strcmp(comm->command,"mkdir") == 0)
+	else if(strcmp(comm->command , "mkdir") == 0)
 		return makedir(comm, sh_mem);
 	else
 	{
@@ -40,25 +41,25 @@ int list(command* com , char* sh_mem)
 	char* cc = sh_mem ;
 	char* directory ;
 	int to_free = 0 ;
-	if(com -> arg != NULL)
+	if(com -> arg != NULL) //if the argument is nor null , take the input directory as argument
 	{
 		directory = com -> arg ;
 	}
-	else
+	else //else take the input directory as current directory
 	{
 		directory = (char*) malloc(MAX_DIREC_SIZE*sizeof(char)) ;
 		to_free = 1 ;
 		getcwd(directory , MAX_DIREC_SIZE) ;
 	}
 	DIR *dir = opendir(directory) ;
-	if(dir == NULL)
+	if(dir == NULL) //unable to open directory stream => directory doesnot exist . return .
 	{
-		sprintf(sh_mem , "%s does not exist" , directory) ;
+		sprintf(sh_mem , "%s folder does not exist" , directory) ;
 		return 0 ;
 	}
 	struct dirent *entry = readdir(dir) ;
 	char *ptr = sh_mem ;
-	while(entry != NULL)
+	while(entry != NULL)//iterate through all elements in the directory stream and print to the shared memory .
 	{
 		strcpy(ptr , entry -> d_name) ;
 		if(*ptr != '.')
@@ -69,16 +70,16 @@ int list(command* com , char* sh_mem)
 		}
 		entry = readdir(dir) ;
 	}
-	*(--ptr) = '\0' ;
-	closedir(dir) ;
+	*(--ptr) = '\0' ; //add null character to end of shared memory
+	closedir(dir) ; //close directory stream .
 	if(to_free == 1)
 		free(directory) ;
-	if(com -> op_redirect != NULL)
+	if(com -> op_redirect != NULL) //if there is an ouput redirect , write contents of shared memory to the output file .
 	{
 		FILE* fp = fopen(com -> op_redirect , "w") ;
 		fwrite(cc , 1 , strlen(cc) , fp) ;
 		fclose(fp) ;
-		cc[0] = '\0' ;
+		cc[0] = '\0' ; //reset the shared nenory , as output id redirected .
 	}
 	return 1 ;
 }
@@ -86,7 +87,7 @@ int list(command* com , char* sh_mem)
 int disp(command* com , char* sh_mem)
 {
 	char* cc = sh_mem ;
-	if(com -> data != NULL)
+	if(com -> data != NULL) //if there is data coming from previous command , consider it to be the data to be displayed and ignore the argument
 	{
 		strcpy(sh_mem , com -> data) ;
 		return 1;
@@ -104,25 +105,25 @@ int disp(command* com , char* sh_mem)
 	FILE* fp = fopen(file , "rb") ;
 	if(fp == NULL)
 	{
-		sprintf(sh_mem , "%s does not exist" , file) ;
+		sprintf(sh_mem , "%s file does not exist" , file) ;
 		return 0 ;
 	}
 	int read , i = 0 ;
-	while(i < MAX_SHARED_MEMORY - 1 && (read = fgetc(fp)) != EOF)
+	while(i < MAX_SHARED_MEMORY - 1 && (read = fgetc(fp)) != EOF) //copy data contents into the shared memory .
 		sh_mem[i++] = read ;
-	if(read != '\n')
+	if(read != '\n') //remove trailing newlines
 		sh_mem[i++] = '\n' ;
 	i-- ;
 	while(i >= 0 && sh_mem[i] == '\n')
 		i-- ;
 	sh_mem[i + 1] = '\0' ;
 	fclose(fp) ;
-	if(com -> op_redirect != NULL)
+	if(com -> op_redirect != NULL)//if there is an ouput redirect , write contents of shared memory to the output file .
 	{
 		FILE* fp = fopen(com -> op_redirect , "w") ;
 		fwrite(cc , 1 , strlen(cc) , fp) ;
 		fclose(fp) ;
-		cc[0] = '\0' ;
+		cc[0] = '\0' ; //reset the shared nenory , as output id redirected .
 	}
 	return 1 ;
 }
@@ -132,7 +133,7 @@ int history(command* com , char* sh_mem , QNode* history_head , QNode* history_e
 	char* cc = sh_mem ;
 	int i = 1 ;
 	QNode* current = history_head -> next ;
-	while(current != NULL)
+	while(current != NULL) //iterate over the queue and print the string in the queue node .
 	{
 		sprintf(sh_mem , "%d %s\n" , i , current -> string) ;
 		i++ ;
@@ -140,7 +141,7 @@ int history(command* com , char* sh_mem , QNode* history_head , QNode* history_e
 		current = current -> next ;
 	}
 	sh_mem[strlen(sh_mem) - 1] = '\0' ;
-	if(com -> op_redirect != NULL)
+	if(com -> op_redirect != NULL)//if there is an ouput redirect , write contents of shared memory to the output file .
 	{
 		FILE* fp = fopen(com -> op_redirect , "w") ;
 		fwrite(cc , 1 , strlen(cc) , fp) ;
@@ -184,7 +185,7 @@ int sort(command* com , char* sh_mem)
 		contents[i+1] = '\0' ;
 		fclose(fp) ;
 	}
-	else
+	else//if there is data coming from previous command , consider it to be the data that is to be sorted and ignore the argument
 	{
 		strcpy(contents , com -> data) ;
 	}
@@ -194,12 +195,12 @@ int sort(command* com , char* sh_mem)
 	char* ps[lines] ;
 	char* l = strtok(contents , "\n") ;
 	i = 0 ;
-	while(l != NULL)
+	while(l != NULL) //retrieve lines in the data
 	{
 		ps[i++] = l ;
 		l = strtok(NULL , "\n") ;
 	}
-	qsort(ps , i , sizeof(char*) , comp_func) ;
+	qsort(ps , i , sizeof(char*) , comp_func) ; //sort the lines .
 	for(i = 0 ; i < lines ; i++)
 	{
 		if(i != lines - 1)
@@ -210,7 +211,7 @@ int sort(command* com , char* sh_mem)
 		if(sh_mem - cc > MAX_SHARED_MEMORY)//do not write out of shared memory !
 				break ;
 	}
-	if(com -> op_redirect != NULL)
+	if(com -> op_redirect != NULL)//if there is an ouput redirect , write contents of shared memory to the output file .
 	{
 		FILE* fp = fopen(com -> op_redirect , "w") ;
 		fwrite(cc , 1 , strlen(cc) , fp) ;
@@ -255,7 +256,7 @@ int grep(command* com , char* sh_mem)
 		contents[read] = '\0' ;
 		fclose(fp) ;
 	}
-	else
+	else//if there is data coming from previous command , consider it to be the data that is to be searched and take entire argument as search string
 	{
 		search = com -> arg ;
 		strcpy(contents , com -> data) ;
@@ -272,7 +273,7 @@ int grep(command* com , char* sh_mem)
 	}
 	for( i = 0 ; i < lines ; i++)
 	{
-		if(strstr(ps[i] , search) != NULL)
+		if(strstr(ps[i] , search) != NULL) //search for the search string in each line
 		{
 			if(sh_mem - cc == 0)
 				sprintf(sh_mem , "%s" , ps[i]) ;	
@@ -283,7 +284,7 @@ int grep(command* com , char* sh_mem)
 				break ;
 		}
 	}
-	if(com -> op_redirect != NULL)
+	if(com -> op_redirect != NULL)//if there is an ouput redirect , write contents of shared memory to the output file .
 	{
 		FILE* fp = fopen(com -> op_redirect , "w") ;
 		fwrite(cc , 1 , strlen(cc) , fp) ;
@@ -317,7 +318,7 @@ int pwd(command *com , char* sh_mem)
 	return 1 ;
 }
 
-int wget(command* com , char* sh_mem)
+int wget(command* com , char* sh_mem)//did it directly using curl api
 {
 	if(com -> arg == NULL)
 	{
@@ -367,13 +368,13 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
 
 int cpy(command *comm, char *sh_mem)
 {
-	int temp = countOccurences( comm -> arg , ' ');
+	int temp = countOccurences(comm -> arg , ' ');
 	if(temp < 1)
 	{
-		sprintf(sh_mem , "Usage : %s source destination \n", comm->command);
-		exit(1);
+		sprintf(sh_mem , "Usage : %s <source> <destination>", comm -> command);
+		return 0 ;
 	}
-	int pos=firstIndexOf(comm -> arg, ' ');
+	int pos = firstIndexOf(comm -> arg, ' ');
 	comm -> arg[pos]='\0';
 	char *src = comm -> arg;
 	char *dest = comm -> arg + pos + 1;

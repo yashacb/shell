@@ -34,6 +34,8 @@ int firstIndexOf(char* str , char c)
 
 int countOccurences(char *str , char c)
 {
+	if(str == NULL)
+		return 0 ;
 	int re = 0 ;
 	while(*str != '\0')
 	{
