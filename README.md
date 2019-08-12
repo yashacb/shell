@@ -9,27 +9,27 @@ Commands supported :
 Convention : Entities within () are optional . Entities within <> are mandatory .
 
 The commands that we implemented are : 
-1 . ls : List files and folders in the current directory .
+1. ls : List files and folders in the current directory .
 		 Syntax : ls (foldername)
-2 . disp : Display contents of a file .
+2. disp : Display contents of a file .
 		 Syntax : disp <filename>
-3 . history : Show the commands executed in the current session . Number of commands to store can be given in the limits.h file
+3. history : Show the commands executed in the current session . Number of commands to store can be given in the limits.h file
 		 Syntax : history
-4 . sort : Sorts the contents of a file .
+4. sort : Sorts the contents of a file .
  		 Syntax : sort <filename>
-5 . grep : Displays lines of a file which match the given text
+5. grep : Displays lines of a file which match the given text
 		 Syntax : grep <filename> <text>
-6 . who : Displays the user currently logged in .
+6. who : Displays the user currently logged in .
 		 Syntax : who
-7 . wget : Downloads a file . (Uses the curl library which may not be available in vanilla linux distros) .
+7. wget : Downloads a file . (Uses the curl library which may not be available in vanilla linux distros) .
 		 Syntax : wget <url> <filename>
-8 . cpy : Copies contents of one file to other . The destination and source files must exist .
+8. cpy : Copies contents of one file to other . The destination and source files must exist .
 		 Syntax : cpy <src> <dst> 
-9 . cwd : Change working directory . 
+9. cwd : Change working directory . 
 		 Syntax : cwd <directory>
-10 . pwd : Print current working diretory .
+10. pwd : Print current working diretory .
  		 Syntax : pwd
-11 . mkdir : Create a new directory .
+11. mkdir : Create a new directory .
 		 Syntax : mkdir <directory>
 
 Apart from the above explicit commands , the shell also supports pseudo commands . For example !! runs the first element in the history .
